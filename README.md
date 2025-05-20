@@ -4,6 +4,8 @@ This repository contains a ROS 2 package implementing an autonomous frontier exp
 
 ---
 
+https://github.com/user-attachments/assets/08ac6c13-06b5-48d4-823c-2e0e4aa61169
+
 ## Features
 
 - **Frontier Detection**: Automatically detects frontiers (unknown areas) in the map.
