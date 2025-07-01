@@ -25,9 +25,24 @@ class ExplorerNode(Node):
         # Map and position data
         self.map_data = None
         self.robot_position = (0, 0)  # Placeholder, update from localization
+        self.robot_last_place_box = (0,0)
+        self.box_size = 4
 
         # Timer for periodic exploration
         self.timer = self.create_timer(5.0, self.explore)
+
+        # Timer to reset robot position after 15 minutes (900 seconds)
+        self.reset_timer = self.create_timer(900.0, self.reset_position_once)
+        self.reset_done = False
+        
+    def reset_position_once(self):
+      if not self.reset_done:
+        x = 10.0
+        y = 10.0
+        self.get_logger().info(f"Robot position reset to x:{x} y:{y} after 15 minutes")
+        self.navigate_to(x,y)
+        self.reset_done = True
+        self.reset_timer.cancel()
 
     def map_callback(self, msg):
         self.map_data = msg
@@ -126,22 +141,21 @@ class ExplorerNode(Node):
         return chosen_frontier
 
     def explore(self):
+        if self.reset_done:
+            self.get_logger().info("Reset done, skipping exploration")
+            return
+
         if self.map_data is None:
             self.get_logger().warning("No map data available")
             return
-
         # Convert map to numpy array
         map_array = np.array(self.map_data.data).reshape(
             (self.map_data.info.height, self.map_data.info.width))
-
         # Detect frontiers
         frontiers = self.find_frontiers(map_array)
 
         if not frontiers:
             self.get_logger().info("No frontiers found. Exploration complete!")
-
-
-
             # self.shutdown_robot()
             return
 
@@ -158,13 +172,6 @@ class ExplorerNode(Node):
 
         # Navigate to the chosen frontier
         self.navigate_to(goal_x, goal_y)
-
-    # def shudown_robot(self):
-    #     
-    #
-    #
-    #     self.get_logger().info("Shutting down robot exploration")
-
 
 def main(args=None):
     rclpy.init(args=args)
