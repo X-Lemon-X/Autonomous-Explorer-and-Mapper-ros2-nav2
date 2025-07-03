@@ -1,9 +1,12 @@
+import geiger_msg.msg
 import rclpy
 from rclpy.node import Node
 from nav_msgs.msg import OccupancyGrid
 from geometry_msgs.msg import PoseStamped
 from nav2_msgs.action import NavigateToPose
 from rclpy.action import ActionClient
+
+from geiger_msg.msg import Radiation
 import numpy as np
 
 
@@ -11,7 +14,7 @@ class ExplorerNode(Node):
     def __init__(self):
         super().__init__('explorer')
         self.get_logger().info("Explorer Node Started")
-
+        a = geiger_msg.msg
         # Subscriber to the map topic
         self.map_sub = self.create_subscription(
             OccupancyGrid, '/map', self.map_callback, 10)
@@ -26,19 +29,19 @@ class ExplorerNode(Node):
         self.map_data = None
         self.robot_position = (0, 0)  # Placeholder, update from localization
         self.robot_last_place_box = (0,0)
-        self.box_size = 4
+        self.box_size = 20
 
         # Timer for periodic exploration
         self.timer = self.create_timer(5.0, self.explore)
 
         # Timer to reset robot position after 15 minutes (900 seconds)
-        self.reset_timer = self.create_timer(900.0, self.reset_position_once)
+        self.reset_timer = self.create_timer(300.0, self.reset_position_once)
         self.reset_done = False
         
     def reset_position_once(self):
       if not self.reset_done:
-        x = 10.0
-        y = 10.0
+        x = 0.0
+        y = -7.4
         self.get_logger().info(f"Robot position reset to x:{x} y:{y} after 15 minutes")
         self.navigate_to(x,y)
         self.reset_done = True
